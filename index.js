@@ -1,7 +1,6 @@
 var express=require("express");
 var app=express();
 var fs=require("fs");
-var settings=JSON.parse(fs.readFileSync(__dirname+"/settings.json","utf8"));
 
 app.use(express.static(__dirname+"/public"));
 app.get("/api/graphs/guild/count",(req,res)=>{
@@ -11,23 +10,25 @@ app.get("/api/graphs/command",(req,res)=>{
   res.send(fs.readFileSync(__dirname+"/data/cmd_graph.json","utf8"));
 });
 
-app.listen(settings.express.port,()=>{
-  console.log("Web online at *:"+settings.express.port);
-});
-
 class Commands {
-  constructor(){
+  constructor(port){
     this.data={
       "guild":0,
       "command":0
     };
     this.cmds=[];
+    app.listen(port,()=>{
+      console.log("Web online at *:"+port);
+    });
   }
   setGuilds(count){
     this.data.guild=count;
   }
   addGuild(){
     this.data.guild++;
+  }
+  removeGuild(){
+    this.data.guild--;
   }
   setCommand(count){
     this.data.command=count;
