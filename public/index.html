@@ -1,0 +1,104 @@
+<html>
+  <head>
+    <title>Discord Bot Admin</title>
+    <script src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+  </head>
+  <body>
+    <h1>Discord Bot Admin</h1>
+    <table>
+      <tr>
+        <td>
+          <b>Main Chart</b>
+          <canvas id="guild_count_graph" width="350" height="200"></canvas>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b>Commands</b>
+          <canvas id="command_use_graph" width="350" height="200"></canvas>
+        </td>
+      </tr>
+    </table>
+
+    <script>
+      Chart.defaults.global.barPercentage=1.0;
+      $(()=>{
+        $.get("/api/graphs/guild/count",count=>{
+          var ctx=document.getElementById("guild_count_graph").getContext("2d");
+          count=JSON.parse(count);
+          window.count=count;
+          count.sort((a,b)=>a.time<b.time);
+          //[{x:'2016-12-25', y:20}, {x:'2016-12-26', y:10}]
+          var main = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels:count.map(a=>new Date(a.time).getHours()+":"+new Date(a.time).getMinutes()+""),
+              datasets:[
+                {
+                  label:"Guilds",
+                  data:count.map(a=>a.guild),
+                  backgroundColor:"rgba(0,0,80,0.4)",
+                  borderColor:"rgba(0,0,80,0.8)"
+                },
+                {
+                  label:"Command Useage",
+                  data:count.map(a=>a.command),
+                  backgroundColor:"rgba(80,0,0,0.4)",
+                  borderColor:"rgba(80,0,0,0.8)"
+                }
+              ]
+            },
+            options: {
+              scales: {
+                yAxes: [{
+                  ticks: {
+                    beginAtZero:true
+                  }
+                }]
+              }
+            }
+          });
+        });
+
+        $.get("/api/graphs/command",count=>{
+          var ctx=document.getElementById("command_use_graph").getContext("2d");
+          count=JSON.parse(count);
+          window.count=count;
+          count.sort((a,b)=>a.time<b.time);
+          //[{x:'2016-12-25', y:20}, {x:'2016-12-26', y:10}]
+          var data=[];
+          count.forEach(a=>{
+            a.data.forEach(b=>{
+              if(!data.find(a=>a.label===b.name)){
+                data.push(
+                  {
+                    "label":b.name,
+                    "data":[]
+                  }
+                );
+              }
+              data[data.indexOf(data.find(a=>a.label===b.name))].data.push(b.uses);
+            });
+          });
+          var command = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels:count.map(a=>new Date(a.time).getHours()+":"+new Date(a.time).getMinutes()+""),
+              datasets:data
+            },
+            options: {
+              scales: {
+                yAxes: [{
+                  ticks: {
+                    beginAtZero:true
+                  }
+                }]
+              }
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
