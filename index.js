@@ -21,7 +21,7 @@ class Commands {
       console.log("Web online at *:"+port);
     });
   }
-  setGuilds(count){
+  setGuild(count){
     this.data.guild=count;
   }
   addGuild(){
